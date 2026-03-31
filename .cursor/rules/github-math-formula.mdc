@@ -40,7 +40,8 @@ $A$, $M$, $(n-1)$
 - 公式含有下标：`a_{ij}`, `M_{ij}`, `S_n`, `r_1`
 - 公式含有函数调用 + 下标组合：`\sigma(i)`, `\tau(s)`, `f(x_0)`
 - 公式含有多个符号的等式：`\sigma(i) = j`, `a_{ij} = 0`
-- 公式含有集合运算（`\setminus`, `\cup`, `\cap`）与下标组合
+- 公式含有集合花括号：`\lbrace 1, 2, 3 \rbrace`
+- 公式含有集合运算（`\setminus`, `\cup`, `\cap`）
 
 **用 `$...$`**（普通模式）的场景：
 - 单独的字母或数字：`$n$`, `$i$`, `$A$`
@@ -48,6 +49,27 @@ $A$, $M$, $(n-1)$
 - 不含下划线的希腊字母：`$\sigma$`, `$\tau$`
 
 **拿不准时，一律用 `` $`...`$ ``，不会出错。**
+
+### 规则 3.5：长公式和复杂集合表达式，改用块级公式
+
+即使用了 `` $`...`$ ``，如果一行文字中内联公式过多或过长（如含有 `\setminus`、`\cup` 的集合表达式），GitHub 仍可能渲染异常。此时应将复杂公式**提取为块级公式 `$$...$$`**，用文字简化行内的描述。
+
+```markdown
+<!-- ❌ 一行中塞了多个复杂内联公式，GitHub 容易解析失败 -->
+它在剩余行 $`\lbrace 1, \dots, n \rbrace \setminus \lbrace i \rbrace`$ 上给出了
+剩余列 $`\lbrace 1, \dots, n \rbrace \setminus \lbrace j \rbrace`$ 的一个双射
+
+<!-- ✅ 行内用文字简述，复杂公式提成块级 -->
+它在删去第 $i$ 行后的剩余行上，给出了删去第 $j$ 列后的剩余列的一个双射。
+
+设剩余行指标和剩余列指标分别为（按自然序排列）：
+
+$$
+r_1 < r_2 < \cdots < r_{n-1} \quad \text{（即} \ \lbrace 1, \dots, n \rbrace \setminus \lbrace i \rbrace \text{）}
+$$
+```
+
+**经验法则：一行文字中不要超过 2 个 `` $`...`$ `` 内联公式，超过时拆分段落或改用块级公式。**
 
 ## 块级公式规则
 
@@ -70,6 +92,26 @@ $$A_{ij} = (-1)^{i+j} M_{ij}$$
 <!-- ✅ 正确 -->
 $$
 A_{ij} = (-1)^{i+j} M_{ij}
+$$
+```
+
+### 规则 5.5：块级公式中不要混用 `\text{}` 和数学命令
+
+GitHub 对 `\text{}` 结束后紧跟数学命令（如 `\lbrace`、`\setminus`）的解析不稳定，容易把数学符号当纯文本输出。
+
+**中文说明应放在公式外面，公式内只写纯数学符号。**
+
+```markdown
+<!-- ❌ 错误：\text 和数学命令混用，GitHub 渲染异常 -->
+$$
+r_1 < r_2 < \cdots < r_{n-1} \quad \text{（即} \ \lbrace 1, \dots, n \rbrace \setminus \lbrace i \rbrace \text{）}
+$$
+
+<!-- ✅ 正确：文字在公式外面，公式内只有数学符号 -->
+记删去第 $i$ 行后的剩余行指标为：
+
+$$
+\lbrace 1, \dots, n \rbrace \setminus \lbrace i \rbrace = \lbrace r_1, r_2, \dots, r_{n-1} \rbrace, \quad r_1 < r_2 < \cdots < r_{n-1}
 $$
 ```
 
@@ -106,16 +148,20 @@ $$
 
 ## 集合花括号的写法
 
-内联公式中使用 `\lbrace` 和 `\rbrace` 代替 `\{` 和 `\}`，因为后者的花括号可能被 Markdown 解析器吃掉：
+内联公式中使用 `\lbrace` 和 `\rbrace` 代替 `\{` 和 `\}`，因为后者的花括号可能被 Markdown 解析器吃掉。
+
+**同时，含有 `\lbrace`/`\rbrace` 的内联公式也属于复杂公式，必须用 `` $`...`$ `` 包裹**：
 
 ```markdown
-<!-- ❌ 内联中可能出问题 -->
-$\{1, 2, 3\}$
-
-<!-- ✅ 安全写法 -->
+<!-- ❌ 错误：普通 $...$ 中 \lbrace/\rbrace 和 \setminus 仍可能被解析异常 -->
 $\lbrace 1, 2, 3 \rbrace$
+$\lbrace 1, \dots, n \rbrace \setminus \lbrace i \rbrace$
 
-<!-- ✅ 块级公式中两种都可以 -->
+<!-- ✅ 正确：用 $`...`$ 包裹 -->
+$`\lbrace 1, 2, 3 \rbrace`$
+$`\lbrace 1, \dots, n \rbrace \setminus \lbrace i \rbrace`$
+
+<!-- ✅ 块级公式中两种都可以，无需特殊处理 -->
 $$
 S = \{1, 2, \dots, n\}
 $$
@@ -132,7 +178,8 @@ $$
 \det(A) = \sum_{\sigma \in S_n} \text{sgn}(\sigma) \prod_{i=1}^{n} a_{i, \sigma(i)}
 $$
 
-其中 $`S_n`$ 是集合 $\lbrace 1, 2, \dots, n \rbrace$ 上所有排列的集合。
-每个排列 $\sigma$ 都有一个确定的值 $`\sigma(i) = j`$。
+其中 $`S_n`$ 是集合 $`\lbrace 1, 2, \dots, n \rbrace`$ 上所有排列的集合。
+每个排列 $\sigma$ 都有一个确定的值 $`\sigma(i) = j`$，其中 $`j \in \lbrace 1, 2, \dots, n \rbrace`$。
 余子式 $`M_{ij}`$ 是删去第 $i$ 行第 $j$ 列后的 $(n-1)$ 阶行列式。
+剩余行指标为 $`\lbrace 1, \dots, n \rbrace \setminus \lbrace i \rbrace`$。
 ```
